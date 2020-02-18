@@ -1,0 +1,119 @@
+import tkinter
+from tkinter import messagebox
+import sqlite3
+
+
+base=sqlite3.connect('LISTAESPERA.db')
+c=base.cursor()
+
+def ingresar():
+    ingreso1 ="NO";ingreso2 ="NO";ingreso3 ="NO"
+
+
+    if not(txt_nombre.get()).isdigit():
+           nombre=txt_nombre.get()
+           ingreso1="SI"
+    else:
+        messagebox.showerror("ERROR","El ingreso NOMBRE no es valido")
+
+    if (txt_dni.get()).isdigit() and ((len(txt_dni.get())==7) or (len(txt_dni.get())==8)):
+           dni=txt_dni.get()
+           ingreso2="SI"
+    else:
+        messagebox.showerror("ERROR","El ingreso DNI no es valido")
+
+
+
+    tipo=txt_tipo.get()
+    tipo=tipo.upper()
+    if (tipo == "A") or (tipo == "B") or (tipo =="C"):
+           ingreso3="SI"
+    else:
+        messagebox.showerror("ERROR","El ingreso TIPO no es valido")
+
+
+    if (ingreso1 =="SI") and (ingreso2 =="SI") and (ingreso3 =="SI"):
+
+        if  tipo == "A":
+            c.execute('''SELECT MAX(TURNO) FROM LISTAESPERA WHERE TIPO == 'A'; ''')
+            turnoA= c.fetchall()
+            turnoA = turnoA[0]
+            turnoA = turnoA[0]
+            if turnoA == None:
+                 turnoA=1
+            else:
+                turnoA = turnoA + 1
+
+            nombre=nombre.upper()
+            c.execute('''INSERT INTO LISTAESPERA (TURNO,NOMBRE,DNI,TIPO)VALUES ({},'{}',{},'A')'''.format(turnoA,nombre,dni))
+            base.commit()
+            messagebox.showinfo("TURNO","su turno es: A{}".format(turnoA))
+
+        elif tipo == "B":
+            c.execute('''SELECT MAX(TURNO) FROM LISTAESPERA WHERE TIPO == 'B'; ''')
+            turnoB = c.fetchall()
+            turnoB = turnoB[0]
+            turnoB = turnoB[0]
+            if turnoB == None:
+                 turnoB=1
+            else:
+                turnoB = turnoB + 1
+
+            nombre=nombre.upper()
+            c.execute('''INSERT INTO LISTAESPERA (TURNO,NOMBRE,DNI,TIPO)VALUES ({},'{}',{},'B')'''.format(turnoB,nombre,dni))
+            base.commit()
+            messagebox.showinfo("TURNO","su turno es: B{}".format(turnoB))
+
+        elif  tipo == "C":
+            c.execute('''SELECT MAX(TURNO) FROM LISTAESPERA WHERE TIPO == 'C'; ''')
+            turnoC=c.fetchall()
+            turnoC = turnoC[0]
+            turnoC = turnoC[0]
+            if turnoC == None:
+                turnoC=1
+            else:
+                turnoC = turnoC + 1
+
+
+            nombre=nombre.upper()
+            c.execute('''INSERT INTO LISTAESPERA (TURNO,NOMBRE,DNI,TIPO)VALUES ({},'{}',{},'C')'''.format(turnoC,nombre,dni))
+            base.commit()
+            messagebox.showinfo("TURNO","su turno es: C{}".format(turnoC))
+
+
+        txt_nombre.delete(0,tkinter.END)
+        txt_dni.delete(0,tkinter.END)
+        txt_tipo.delete(0,tkinter.END)
+
+
+
+
+c.execute('''CREATE TABLE IF NOT EXISTS LISTAESPERA (
+            TURNO INTEGER,
+            NOMBRE TEXT,
+            DNI INTEGER,
+            TIPO INTEGER);''')
+
+window=tkinter.Tk()
+window.title("ESPERA")
+window.geometry('400x400')
+lbl_nombre=tkinter.Label(window,text="NOMBRE:")
+lbl_nombre.grid(column=0,row=0,padx=40,pady=40)
+txt_nombre=tkinter.Entry(window)
+txt_nombre.grid(column=1,row=0)
+lbl_dni = tkinter.Label(window, text="DNI:")
+lbl_dni.grid(column=0, row=1, padx=40, pady=40)
+txt_dni = tkinter.Entry(window)
+txt_dni.grid(column=1, row=1)
+lbl_tipo = tkinter.Label(window, text="TIPO (a - b - c):")
+lbl_tipo.grid(column=0, row=2, padx=40, pady=40)
+txt_tipo = tkinter.Entry(window)
+txt_tipo.grid(column=1, row=2)
+
+btn_ingresar=tkinter.Button(window,text="INGRESAR",bg="orange",command=ingresar)
+btn_ingresar.grid(column=1,row=3,columnspan=2)
+
+
+
+window.mainloop()
+
