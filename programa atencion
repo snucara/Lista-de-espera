@@ -1,0 +1,78 @@
+import tkinter
+from tkinter import messagebox
+import sqlite3
+
+
+base=sqlite3.connect('LISTAESPERA.db')
+c=base.cursor()
+
+def refrescar():
+    tipo=txt_tipo.get()
+    tipo=tipo.upper()
+
+    if (tipo =="A") or (tipo =="B") or (tipo =="C"):
+          lst_espera.delete(0,tkinter.END)
+          c.execute('''SELECT TIPO ,TURNO, NOMBRE FROM LISTAESPERA WHERE TIPO =='{}';'''.format(tipo))
+          a=c.fetchall()
+
+          if a==[]:
+               messagebox.showwarning("ATENCION","NO HAY PERSONAS EN ESPERA")
+          else:
+                contador=0
+                for i in a:
+                      lst_espera.insert(tkinter.END,a[contador])
+                      contador = contador + 1
+
+    else:
+        messagebox.showerror("ERROR","El ingreso TIPO no es valido o no esta ingresado")
+
+
+def atender():
+
+    tipo=txt_tipo.get()
+    tipo=tipo.upper()
+    c.execute('''SELECT TIPO,MIN(TURNO),NOMBRE FROM LISTAESPERA WHERE TIPO =='{}';'''.format(tipo))
+    a=c.fetchall()
+    a=a[0]
+    if a!=(None,None,None):
+        messagebox.showwarning("ATENCION", "Antes de ATENDER se refrescara la lista segun el TIPO ingresado")
+        refrescar()
+        sino=messagebox.askyesno("TURNO"," {}    ¿ATENDER?".format(a))
+        if sino==True:
+            c.execute('''DELETE FROM LISTAESPERA WHERE TIPO=='{}' AND TURNO==(SELECT MIN(TURNO) FROM LISTAESPERA WHERE TIPO=='{}')'''.format(tipo,tipo))
+            base.commit()
+            refrescar()
+
+
+    else:
+        messagebox.showwarning("ATENCION","La lista se encuentra vacia")
+
+
+
+
+
+c.execute('''CREATE TABLE IF NOT EXISTS LISTAESPERA (
+            TURNO INTEGER,
+            NOMBRE TEXT,
+            DNI INTEGER,
+            TIPO INTEGER);''')
+
+window=tkinter.Tk()
+window.title("ATENCION")
+window.geometry('550x500')
+lst_espera=tkinter.Listbox(window,width=23,height=10,bg="light green",font=("arial",20))
+lst_espera.grid(column=0,row=0,rowspan=8,columnspan=3,padx=20,pady=20)
+btn_atender=tkinter.Button(window,text="ATENDER",bg="green",fg="white",command=atender)
+btn_atender.grid(column=3,row=0)
+btn_borrar=tkinter.Button(window,text="BORRAR",bg="yellow")
+btn_borrar.grid(column=3,row=1)
+btn_refrescar=tkinter.Button(window,text="REFRESCAR",bg="orange",command=refrescar)
+btn_refrescar.grid(column=0,row=9)
+lbl_tipo=tkinter.Label(window,text="TIPO:(a - b - c)")
+lbl_tipo.grid(column=2,row=9)
+txt_tipo=tkinter.Entry(window,width=10,bg="light gray")
+txt_tipo.grid(column=3,row=9)
+
+
+
+window.mainloop()
